@@ -1,0 +1,175 @@
+'use client';
+
+import { useEffect, useMemo, useRef, useState } from 'react';
+
+import { useRange } from '@/hooks/useRange';
+import { sortedUniqueValues, valueToPercent } from '@/utils/range';
+
+import { RangeLabel } from './components/RangeLabel';
+import { RangeThumb } from './components/RangeThumb';
+import { RangeTrack } from './components/RangeTrack';
+
+type ContinuousRangeProps = {
+  variant?: 'continuous';
+  min: number;
+  max: number;
+};
+
+type FixedRangeProps = {
+  variant: 'fixed';
+  values: number[];
+};
+
+type RangeProps = ContinuousRangeProps | FixedRangeProps;
+
+const currencyFormatter = new Intl.NumberFormat('es-ES', {
+  style: 'currency',
+  currency: 'EUR',
+});
+
+export function Range(props: RangeProps) {
+  const isFixed = props.variant === 'fixed';
+  const rawValues = isFixed ? props.values : undefined;
+
+  const fixedValues = useMemo(() => (rawValues ? sortedUniqueValues(rawValues) : undefined), [rawValues]);
+
+  const absoluteMin = isFixed ? (fixedValues![0] ?? 0) : props.min;
+  const absoluteMax = isFixed ? (fixedValues![fixedValues!.length - 1] ?? 0) : props.max;
+  const labelFormatter = isFixed ? (value: number) => currencyFormatter.format(value) : undefined;
+  const labelTitleClassName = isFixed
+    ? 'text-[10px] font-medium uppercase tracking-[0.28em] text-[#8c8579]'
+    : 'text-[10px] font-medium uppercase tracking-[0.28em] text-[#8c8579]';
+  const minLabelControlClassName = isFixed
+    ? 'w-28 rounded-none border-0 border-b border-[#111111] bg-transparent px-0 py-1 text-left text-lg font-light text-[#111111]'
+    : 'w-24 rounded-none border-0 border-b border-[#111111] bg-transparent px-0 py-1 text-left text-lg font-light text-[#111111]';
+  const maxLabelControlClassName = isFixed
+    ? 'w-28 rounded-none border-0 border-b border-[#111111] bg-transparent px-0 py-1 text-right text-lg font-light text-[#111111]'
+    : 'w-24 rounded-none border-0 border-b border-[#111111] bg-transparent px-0 py-1 text-right text-lg font-light text-[#111111]';
+
+  const [currentMinLimit, setCurrentMinLimit] = useState(absoluteMin);
+  const [currentMaxLimit, setCurrentMaxLimit] = useState(absoluteMax);
+  const previousLimitsRef = useRef({ min: currentMinLimit, max: currentMaxLimit });
+
+  const {
+    trackRef,
+    minValue,
+    maxValue,
+    minPercent,
+    maxPercent,
+    isDraggingMin,
+    isDraggingMax,
+    setRangeValues,
+    onTrackPointerDown,
+    onThumbPointerDown,
+    onThumbKeyDown,
+  } = useRange({
+    minLimit: isFixed ? absoluteMin : currentMinLimit,
+    maxLimit: isFixed ? absoluteMax : currentMaxLimit,
+    initialMin: isFixed ? absoluteMin : currentMinLimit,
+    initialMax: isFixed ? absoluteMax : currentMaxLimit,
+    fixedValues,
+  });
+
+  const handleMinCommitAction = (nextMin: number) => {
+    if (isFixed) return;
+    const boundedMin = Math.min(Math.max(nextMin, absoluteMin), absoluteMax);
+    setCurrentMinLimit(boundedMin);
+    if (currentMaxLimit < boundedMin) {
+      setCurrentMaxLimit(boundedMin);
+    }
+  };
+
+  const handleMaxCommitAction = (nextMax: number) => {
+    if (isFixed) return;
+    const boundedMax = Math.max(Math.min(nextMax, absoluteMax), absoluteMin);
+    setCurrentMaxLimit(boundedMax);
+    if (currentMinLimit > boundedMax) {
+      setCurrentMinLimit(boundedMax);
+    }
+  };
+
+  useEffect(() => {
+    if (isFixed) return;
+    if (previousLimitsRef.current.min === currentMinLimit && previousLimitsRef.current.max === currentMaxLimit) {
+      return;
+    }
+
+    previousLimitsRef.current = { min: currentMinLimit, max: currentMaxLimit };
+    setRangeValues(currentMinLimit, currentMaxLimit);
+  }, [isFixed, currentMinLimit, currentMaxLimit, setRangeValues]);
+
+  return (
+    <div className="w-full">
+      <RangeTrack
+        trackRef={trackRef}
+        minPercent={minPercent}
+        maxPercent={maxPercent}
+        onPointerDown={onTrackPointerDown}
+      >
+        {isFixed &&
+          fixedValues!.map((value) => (
+            <div
+              key={value}
+              className="absolute top-1/2 -translate-y-1/2"
+              style={{ left: `${valueToPercent(value, absoluteMin, absoluteMax)}%` }}
+            >
+              <span
+                className="absolute left-1/2 top-0 h-2 w-px -translate-x-1/2 -translate-y-1/2 bg-[#8c8579]"
+                aria-hidden="true"
+              />
+              <span className="absolute left-1/2 top-4 -translate-x-1/2 whitespace-nowrap text-[10px] font-medium uppercase tracking-[0.14em] text-[#8c8579]">
+                {currencyFormatter.format(value)}
+              </span>
+            </div>
+          ))}
+
+        <RangeThumb
+          label="minimum"
+          value={minValue}
+          percent={minPercent}
+          min={isFixed ? absoluteMin : currentMinLimit}
+          max={isFixed ? absoluteMax : currentMaxLimit}
+          dragging={isDraggingMin}
+          onPointerDown={onThumbPointerDown('min')}
+          onKeyDown={onThumbKeyDown('min')}
+        />
+        <RangeThumb
+          label="maximum"
+          value={maxValue}
+          percent={maxPercent}
+          min={isFixed ? absoluteMin : currentMinLimit}
+          max={isFixed ? absoluteMax : currentMaxLimit}
+          dragging={isDraggingMax}
+          onPointerDown={onThumbPointerDown('max')}
+          onKeyDown={onThumbKeyDown('max')}
+        />
+      </RangeTrack>
+
+      <div className="mt-8 flex items-end justify-between gap-4">
+        <RangeLabel
+          title="Min"
+          value={minValue}
+          editable={!isFixed}
+          titleClassName={labelTitleClassName}
+          min={absoluteMin}
+          max={absoluteMax}
+          onCommitAction={handleMinCommitAction}
+          formatterAction={labelFormatter}
+          controlClassName={minLabelControlClassName}
+        />
+        <div className="mb-3 h-px flex-1 bg-[#e6e0d6]" />
+        <RangeLabel
+          title="Max"
+          value={maxValue}
+          editable={!isFixed}
+          titleClassName={`text-right ${labelTitleClassName}`}
+          min={absoluteMin}
+          max={absoluteMax}
+          onCommitAction={handleMaxCommitAction}
+          formatterAction={labelFormatter}
+          controlClassName={maxLabelControlClassName}
+        />
+      </div>
+    </div>
+  );
+}
