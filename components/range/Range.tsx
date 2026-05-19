@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { useRange } from '@/hooks/useRange';
+import { useRange } from '@/components/range/hooks/useRange';
+import { RANGE_VARIANTS } from '@/types/range';
 import { sortedUniqueValues, valueToPercent } from '@/utils/range';
 
 import { RangeLabel } from './components/RangeLabel';
@@ -10,13 +11,13 @@ import { RangeThumb } from './components/RangeThumb';
 import { RangeTrack } from './components/RangeTrack';
 
 type ContinuousRangeProps = {
-  variant?: 'continuous';
+  variant?: typeof RANGE_VARIANTS.CONTINUOUS;
   min: number;
   max: number;
 };
 
 type FixedRangeProps = {
-  variant: 'fixed';
+  variant: typeof RANGE_VARIANTS.FIXED;
   values: number[];
 };
 
@@ -28,7 +29,7 @@ const currencyFormatter = new Intl.NumberFormat('es-ES', {
 });
 
 export function Range(props: RangeProps) {
-  const isFixed = props.variant === 'fixed';
+  const isFixed = props.variant === RANGE_VARIANTS.FIXED;
   const rawValues = isFixed ? props.values : undefined;
 
   const fixedValues = useMemo(() => (rawValues ? sortedUniqueValues(rawValues) : undefined), [rawValues]);

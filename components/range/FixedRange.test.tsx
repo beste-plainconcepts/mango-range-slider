@@ -2,6 +2,7 @@ import '@testing-library/jest-dom';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 import { Range } from '@/components/range/Range';
+import { RANGE_VARIANTS } from '@/types/range';
 
 const values = [1.99, 5.99, 10.99, 30.99, 50.99, 70.99];
 
@@ -24,21 +25,21 @@ function mockTrackRect() {
 
 describe('FixedRange', () => {
   it('renders currency labels', () => {
-    render(<Range variant="fixed" values={values} />);
+    render(<Range variant={RANGE_VARIANTS.FIXED} values={values} />);
 
     expect(screen.getByTestId('min-label')).toHaveTextContent('1,99');
     expect(screen.getByTestId('max-label')).toHaveTextContent('70,99');
   });
 
   it('does not allow editing fixed labels', () => {
-    render(<Range variant="fixed" values={values} />);
+    render(<Range variant={RANGE_VARIANTS.FIXED} values={values} />);
 
     fireEvent.click(screen.getByTestId('min-label'));
     expect(screen.queryByTestId('min-input')).not.toBeInTheDocument();
   });
 
   it('steps through discrete values with keyboard', async () => {
-    render(<Range variant="fixed" values={values} />);
+    render(<Range variant={RANGE_VARIANTS.FIXED} values={values} />);
 
     const minThumb = screen.getByTestId('minimum-thumb');
     minThumb.focus();
@@ -50,7 +51,7 @@ describe('FixedRange', () => {
   });
 
   it('snaps dragging to closest fixed value', async () => {
-    render(<Range variant="fixed" values={values} />);
+    render(<Range variant={RANGE_VARIANTS.FIXED} values={values} />);
     mockTrackRect();
 
     const minThumb = screen.getByTestId('minimum-thumb');
@@ -64,7 +65,7 @@ describe('FixedRange', () => {
   });
 
   it('sorts and deduplicates fixed values', async () => {
-    render(<Range variant="fixed" values={[10.99, 1.99, 10.99, 5.99]} />);
+    render(<Range variant={RANGE_VARIANTS.FIXED} values={[10.99, 1.99, 10.99, 5.99]} />);
 
     expect(screen.getByTestId('min-label')).toHaveTextContent('1,99');
     expect(screen.getByTestId('max-label')).toHaveTextContent('10,99');
@@ -80,7 +81,7 @@ describe('FixedRange', () => {
   });
 
   it('handles an empty values array safely', () => {
-    render(<Range variant="fixed" values={[]} />);
+    render(<Range variant={RANGE_VARIANTS.FIXED} values={[]} />);
 
     expect(screen.getByTestId('minimum-thumb')).toHaveAttribute('aria-valuenow', '0');
     expect(screen.getByTestId('maximum-thumb')).toHaveAttribute('aria-valuenow', '0');
@@ -89,7 +90,7 @@ describe('FixedRange', () => {
   });
 
   it('handles a single-value array by keeping both thumbs fixed', async () => {
-    render(<Range variant="fixed" values={[42.99]} />);
+    render(<Range variant={RANGE_VARIANTS.FIXED} values={[42.99]} />);
     mockTrackRect();
 
     const minThumb = screen.getByTestId('minimum-thumb');
@@ -109,7 +110,7 @@ describe('FixedRange', () => {
   });
 
   it('normalizes invalid drag selections to the closest fixed value', async () => {
-    render(<Range variant="fixed" values={values} />);
+    render(<Range variant={RANGE_VARIANTS.FIXED} values={values} />);
     mockTrackRect();
 
     const maxThumb = screen.getByTestId('maximum-thumb');

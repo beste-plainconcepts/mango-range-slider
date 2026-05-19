@@ -3,6 +3,13 @@ export type RangeValues = {
   max: number;
 };
 
+export const RANGE_VARIANTS = {
+  CONTINUOUS: 'continuous',
+  FIXED: 'fixed',
+} as const;
+
+export type RangeVariant = (typeof RANGE_VARIANTS)[keyof typeof RANGE_VARIANTS];
+
 export type FixedRangeValues = {
   rangeValues: number[];
 };

@@ -83,9 +83,6 @@ pnpm test:watch
 
 ```txt
 app/
-	api/
-		fixed-range/route.ts
-		range/route.ts
 	exercise1/page.tsx
 	exercise2/page.tsx
 	globals.css
@@ -93,29 +90,50 @@ app/
 	page.tsx
 components/
 	range/
+		FixedRange.test.tsx
 		Range.tsx
 		Range.test.tsx
-		FixedRange.test.tsx
 		components/
-				RangeHeader.test.tsx
+			RangeHeader.test.tsx
 			RangeHeader.tsx
-			RangeLabel.tsx
 			RangeLabel.test.tsx
-				RangeThumb.test.tsx
+			RangeLabel.tsx
+			RangeThumb.test.tsx
 			RangeThumb.tsx
-				RangeTrack.test.tsx
+			RangeTrack.test.tsx
 			RangeTrack.tsx
+		hooks/
+			useRange.ts
 		services/
+			api/
+				fixed-range/route.ts
+				range/route.ts
 			range.ts
-hooks/
-	useRange.ts
 tests/
 	setup.ts
 types/
 	range.ts
 utils/
-	range.ts
-	range.test.ts
+	range/
+		clamp/
+			clamp.test.ts
+			index.ts
+		getClosestFixedValue/
+			getClosestFixedValue.test.ts
+			index.ts
+		getNextFixedValue/
+			getNextFixedValue.test.ts
+			index.ts
+		index.ts
+		percentToValue/
+			index.ts
+			percentToValue.test.ts
+		sortedUniqueValues/
+			index.ts
+			sortedUniqueValues.test.ts
+		valueToPercent/
+			index.ts
+			valueToPercent.test.ts
 ```
 
 ## Architecture
@@ -134,9 +152,9 @@ The app follows a small layered structure:
 app/exercise1/page.tsx or app/exercise2/page.tsx
 	-> components/range/services/range.ts
 	-> RangeHeader + Range
-	-> useRange
+	-> components/range/hooks/useRange.ts
 	-> RangeTrack + RangeThumb + RangeLabel
-	-> utils/range.ts
+	-> utils/range/index.ts
 ```
 
 ## Component Responsibilities
@@ -148,7 +166,7 @@ Shared slider implementation for both modes.
 Responsibilities:
 
 - Supports continuous mode with `min` and `max` props
-- Supports fixed mode with `variant="fixed"` and `values`
+- Supports fixed mode with `variant={RANGE_VARIANTS.FIXED}` and `values`
 - Maintains editable limits only for continuous mode
 - Synchronizes limit changes with the selected range via `setRangeValues`
 - Renders the correct labels, ticks, and formatting based on the active variant
@@ -241,7 +259,7 @@ The hook returns:
 
 ## Utilities
 
-Shared range math lives in `utils/range.ts`.
+Shared range math lives in the `utils/range/` module and is split by helper.
 
 Current utilities:
 
@@ -252,6 +270,16 @@ Current utilities:
 - `getNextFixedValue`
 - `sortedUniqueValues`
 
+Folder layout:
+
+- `utils/range/index.ts` re-exports the public utility API
+- `utils/range/clamp/`
+- `utils/range/valueToPercent/`
+- `utils/range/percentToValue/`
+- `utils/range/getClosestFixedValue/`
+- `utils/range/getNextFixedValue/`
+- `utils/range/sortedUniqueValues/`
+
 These functions stay pure and deterministic, which keeps the hook smaller and makes unit testing straightforward.
 
 ## Types
@@ -261,6 +289,8 @@ Shared types live in `types/range.ts`.
 - `RangeValues` - API shape for continuous mode
 - `FixedRangeValues` - API shape for fixed mode
 - `RangeSelection` - generic selected interval shape
+- `RANGE_VARIANTS` - shared variant constants for continuous and fixed modes
+- `RangeVariant` - union type derived from `RANGE_VARIANTS`
 
 ## Interaction Model
 
@@ -301,7 +331,14 @@ The test suite covers utility and integration behavior.
 
 ### Utility Tests
 
-`utils/range.test.ts`
+Utilities are tested in colocated files:
+
+- `utils/range/clamp/clamp.test.ts`
+- `utils/range/valueToPercent/valueToPercent.test.ts`
+- `utils/range/percentToValue/percentToValue.test.ts`
+- `utils/range/getClosestFixedValue/getClosestFixedValue.test.ts`
+- `utils/range/getNextFixedValue/getNextFixedValue.test.ts`
+- `utils/range/sortedUniqueValues/sortedUniqueValues.test.ts`
 
 Covers:
 
@@ -387,10 +424,10 @@ The UI uses an editorial visual language:
 - The pages fetch data on the server and pass it into client components.
 - Mocked API routes and local services intentionally mirror the same data shape.
 - The slider implementation avoids native range inputs to keep interaction logic fully custom and testable.
-- The project uses a plain app structure with `app`, `components`, `hooks`, `utils`, `types`, and `tests` folders only.
-- Services live inside the Range module under `components/range/services/`.
+- The project uses a feature-oriented range module under `components/range/`, with colocated subcomponents, hook, services, and tests.
+- Services and route handlers live inside the Range module under `components/range/services/`.
 - Tests are co-located next to the files they test.
-- No barrel files (`index.ts`) are used anywhere.
+- A barrel export is used in `utils/range/index.ts` to preserve a clean utility import surface.
 
 ## Possible Next Refactors
 

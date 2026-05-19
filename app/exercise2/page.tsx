@@ -1,6 +1,7 @@
 import { Range } from '@/components/range/Range';
 import { RangeHeader } from '@/components/range/components/RangeHeader';
 import { fetchFixedRange } from '@/components/range/services/range';
+import { RANGE_VARIANTS } from '@/types/range';
 
 export default async function Exercise2Page() {
   const { rangeValues } = await fetchFixedRange();
@@ -13,7 +14,7 @@ export default async function Exercise2Page() {
           title="Fixed values"
           description="Values snap to predefined currency points."
         />
-        <Range variant="fixed" values={rangeValues} />
+        <Range variant={RANGE_VARIANTS.FIXED} values={rangeValues} />
       </section>
     </main>
   );
