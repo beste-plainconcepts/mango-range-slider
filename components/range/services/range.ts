@@ -1,14 +1,13 @@
 import type { FixedRangeValues, RangeValues } from '@/types/range';
 
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
+
 export async function fetchRange(): Promise<RangeValues> {
-  return {
-    min: 1,
-    max: 100,
-  };
+  const response = await fetch(`${BASE_URL}/api/range`);
+  return response.json();
 }
 
 export async function fetchFixedRange(): Promise<FixedRangeValues> {
-  return {
-    rangeValues: [1.99, 5.99, 10.99, 30.99, 50.99, 70.99],
-  };
+  const response = await fetch(`${BASE_URL}/api/fixed-range`);
+  return response.json();
 }
