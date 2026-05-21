@@ -27,6 +27,15 @@ describe('Range', () => {
     expect(screen.getByTestId('max-label')).toHaveTextContent('100');
   });
 
+  it('shows euro formatting in continuous labels and tooltips', () => {
+    render(<Range min={1} max={100} />);
+
+    expect(screen.getByTestId('min-label')).toHaveTextContent('€');
+    expect(screen.getByTestId('max-label')).toHaveTextContent('€');
+    expect(screen.getByTestId('minimum-tooltip')).toHaveTextContent('€');
+    expect(screen.getByTestId('maximum-tooltip')).toHaveTextContent('€');
+  });
+
   it('exposes slider accessibility attributes', () => {
     render(<Range min={1} max={100} />);
 

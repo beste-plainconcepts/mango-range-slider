@@ -16,6 +16,7 @@ describe('RangeThumb', () => {
         min={1}
         max={100}
         dragging={false}
+        tooltip="25€"
         onPointerDown={onPointerDown}
         onKeyDown={onKeyDown}
       />,
@@ -28,8 +29,10 @@ describe('RangeThumb', () => {
     expect(thumb.getAttribute('aria-valuemin')).toBe('1');
     expect(thumb.getAttribute('aria-valuemax')).toBe('100');
     expect(thumb.getAttribute('aria-valuenow')).toBe('25');
+    expect(thumb.getAttribute('aria-valuetext')).toBe('25€');
     expect(thumb.style.left).toBe('40%');
     expect(thumb.style.cursor).toBe('grab');
+    expect(screen.getByTestId('minimum-tooltip')).toHaveTextContent('25€');
   });
 
   it('switches cursor style while dragging', () => {
@@ -44,6 +47,7 @@ describe('RangeThumb', () => {
         min={1}
         max={100}
         dragging
+        tooltip="75€"
         onPointerDown={onPointerDown}
         onKeyDown={onKeyDown}
       />,
@@ -64,6 +68,7 @@ describe('RangeThumb', () => {
         min={1}
         max={100}
         dragging={false}
+        tooltip="25€"
         onPointerDown={onPointerDown}
         onKeyDown={onKeyDown}
       />,

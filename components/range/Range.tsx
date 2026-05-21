@@ -31,25 +31,22 @@ const currencyFormatter = new Intl.NumberFormat('es-ES', {
 export function Range(props: RangeProps) {
   const isFixed = props.variant === RANGE_VARIANTS.FIXED;
   const rawValues = isFixed ? props.values : undefined;
-
   const fixedValues = useMemo(() => (rawValues ? sortedUniqueValues(rawValues) : undefined), [rawValues]);
-
   const absoluteMin = isFixed ? (fixedValues![0] ?? 0) : props.min;
   const absoluteMax = isFixed ? (fixedValues![fixedValues!.length - 1] ?? 0) : props.max;
-  const labelFormatter = isFixed ? (value: number) => currencyFormatter.format(value) : undefined;
-  const labelTitleClassName = isFixed
-    ? 'text-[10px] font-medium uppercase tracking-[0.28em] text-[#8c8579]'
-    : 'text-[10px] font-medium uppercase tracking-[0.28em] text-[#8c8579]';
-  const minLabelControlClassName = isFixed
-    ? 'w-28 rounded-none border-0 border-b border-[#111111] bg-transparent px-0 py-1 text-left text-lg font-light text-[#111111]'
-    : 'w-24 rounded-none border-0 border-b border-[#111111] bg-transparent px-0 py-1 text-left text-lg font-light text-[#111111]';
-  const maxLabelControlClassName = isFixed
-    ? 'w-28 rounded-none border-0 border-b border-[#111111] bg-transparent px-0 py-1 text-right text-lg font-light text-[#111111]'
-    : 'w-24 rounded-none border-0 border-b border-[#111111] bg-transparent px-0 py-1 text-right text-lg font-light text-[#111111]';
-
+  const formatValue = (value: number) => currencyFormatter.format(value);
+  const labelFormatter = (value: number) => formatValue(value);
+  const labelTitleClassName = 'text-[10px] font-medium uppercase tracking-[0.28em] text-[#8c8579]';
+  const minLabelControlClassName =
+    'w-24 rounded-none border-0 border-b border-[#111111] bg-transparent px-0 py-1 text-left text-lg font-light text-[#111111]';
+  const maxLabelControlClassName =
+    'w-24 rounded-none border-0 border-b border-[#111111] bg-transparent px-0 py-1 text-right text-lg font-light text-[#111111]';
   const [currentMinLimit, setCurrentMinLimit] = useState(absoluteMin);
   const [currentMaxLimit, setCurrentMaxLimit] = useState(absoluteMax);
   const previousLimitsRef = useRef({ min: currentMinLimit, max: currentMaxLimit });
+
+  const effectiveMin = isFixed ? absoluteMin : currentMinLimit;
+  const effectiveMax = isFixed ? absoluteMax : currentMaxLimit;
 
   const {
     trackRef,
@@ -64,10 +61,10 @@ export function Range(props: RangeProps) {
     onThumbPointerDown,
     onThumbKeyDown,
   } = useRange({
-    minLimit: isFixed ? absoluteMin : currentMinLimit,
-    maxLimit: isFixed ? absoluteMax : currentMaxLimit,
-    initialMin: isFixed ? absoluteMin : currentMinLimit,
-    initialMax: isFixed ? absoluteMax : currentMaxLimit,
+    minLimit: effectiveMin,
+    maxLimit: effectiveMax,
+    initialMin: effectiveMin,
+    initialMax: effectiveMax,
     fixedValues,
   });
 
@@ -128,9 +125,10 @@ export function Range(props: RangeProps) {
           label="minimum"
           value={minValue}
           percent={minPercent}
-          min={isFixed ? absoluteMin : currentMinLimit}
-          max={isFixed ? absoluteMax : currentMaxLimit}
+          min={effectiveMin}
+          max={effectiveMax}
           dragging={isDraggingMin}
+          tooltip={formatValue(minValue)}
           onPointerDown={onThumbPointerDown('min')}
           onKeyDown={onThumbKeyDown('min')}
         />
@@ -138,9 +136,10 @@ export function Range(props: RangeProps) {
           label="maximum"
           value={maxValue}
           percent={maxPercent}
-          min={isFixed ? absoluteMin : currentMinLimit}
-          max={isFixed ? absoluteMax : currentMaxLimit}
+          min={effectiveMin}
+          max={effectiveMax}
           dragging={isDraggingMax}
+          tooltip={formatValue(maxValue)}
           onPointerDown={onThumbPointerDown('max')}
           onKeyDown={onThumbKeyDown('max')}
         />
