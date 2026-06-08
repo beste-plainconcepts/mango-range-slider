@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 
 import { RangeLabel } from '@/components/range/components/RangeLabel';
+import { vi } from 'vitest';
 
 type EditableLabelHarnessProps = {
   title: string;

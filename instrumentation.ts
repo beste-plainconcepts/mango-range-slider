@@ -1,6 +1,4 @@
 export async function register() {
-  if (process.env.NEXT_RUNTIME === 'nodejs') {
-    const { server } = await import('./mocks/server');
-    server.listen({ onUnhandledRequest: 'bypass' });
-  }
+  // MSW interception removed — API routes now handled by Next.js Route Handlers.
+  // MSW is still used in vitest for test mocking (see tests/setup.ts).
 }

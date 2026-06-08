@@ -28,6 +28,12 @@ const currencyFormatter = new Intl.NumberFormat('es-ES', {
   currency: 'EUR',
 });
 
+const labelTitleClassName = 'text-[10px] font-medium uppercase tracking-[0.28em] text-[#8c8579]';
+const minLabelControlClassName =
+  'w-24 rounded-none border-0 border-b border-[#111111] bg-transparent px-0 py-1 text-left text-lg font-light text-[#111111]';
+const maxLabelControlClassName =
+  'w-24 rounded-none border-0 border-b border-[#111111] bg-transparent px-0 py-1 text-right text-lg font-light text-[#111111]';
+
 export function Range(props: RangeProps) {
   const isFixed = props.variant === RANGE_VARIANTS.FIXED;
   const rawValues = isFixed ? props.values : undefined;
@@ -35,12 +41,6 @@ export function Range(props: RangeProps) {
   const absoluteMin = isFixed ? (fixedValues![0] ?? 0) : props.min;
   const absoluteMax = isFixed ? (fixedValues![fixedValues!.length - 1] ?? 0) : props.max;
   const formatValue = (value: number) => currencyFormatter.format(value);
-  const labelFormatter = (value: number) => formatValue(value);
-  const labelTitleClassName = 'text-[10px] font-medium uppercase tracking-[0.28em] text-[#8c8579]';
-  const minLabelControlClassName =
-    'w-24 rounded-none border-0 border-b border-[#111111] bg-transparent px-0 py-1 text-left text-lg font-light text-[#111111]';
-  const maxLabelControlClassName =
-    'w-24 rounded-none border-0 border-b border-[#111111] bg-transparent px-0 py-1 text-right text-lg font-light text-[#111111]';
   const [currentMinLimit, setCurrentMinLimit] = useState(absoluteMin);
   const [currentMaxLimit, setCurrentMaxLimit] = useState(absoluteMax);
   const previousLimitsRef = useRef({ min: currentMinLimit, max: currentMaxLimit });
@@ -154,7 +154,7 @@ export function Range(props: RangeProps) {
           min={absoluteMin}
           max={absoluteMax}
           onCommitAction={handleMinCommitAction}
-          formatterAction={labelFormatter}
+          formatterAction={formatValue}
           controlClassName={minLabelControlClassName}
         />
         <div className="mb-3 h-px flex-1 bg-[#e6e0d6]" />
@@ -166,7 +166,7 @@ export function Range(props: RangeProps) {
           min={absoluteMin}
           max={absoluteMax}
           onCommitAction={handleMaxCommitAction}
-          formatterAction={labelFormatter}
+          formatterAction={formatValue}
           controlClassName={maxLabelControlClassName}
         />
       </div>
